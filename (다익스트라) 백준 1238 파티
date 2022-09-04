@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <queue>
+#include <vector>
+#define INT_MAX 2100000000
+using namespace std;
+
+int N,M,X,a,b,c,result;
+vector<pair<int,int> > edge[1001];
+int dist[1001][1001];
+int visited[1001][1001];
+
+void go(int start){
+	priority_queue<pair<int,int> > pq;
+	dist[start][start] = 0;
+	pq.push(make_pair(0, start));
+	
+	while(!pq.empty()) {
+		int now = pq.top().second;
+		int now_time = -pq.top().first;
+		pq.pop();
+		
+		if(visited[start][now] == 1) continue;
+		
+		for(int k=0; k<edge[now].size(); k++) {
+			int next = edge[now][k].second;
+			int next_time = now_time + edge[now][k].first;
+			
+			if(dist[start][next] > next_time){
+				dist[start][next] = next_time;
+				pq.push(make_pair(-next_time, next));
+			}
+		}
+		
+		visited[start][now] = 1;
+	}
+}
+
+int main() {
+	
+	scanf("%d %d %d", &N, &M, &X);
+	
+	for(int i=0; i<=N; i++) {
+		for(int j=0; j<=N; j++) {
+			dist[i][j] = INT_MAX;
+			visited[i][j] = 0;
+		}
+		edge[i].clear();
+	}
+	
+	for(int i=1; i<=M; i++) {
+		scanf("%d %d %d", &a, &b, &c);
+		edge[a].push_back(make_pair(c,b));	// 거리, 도착지 
+	}
+	
+	go(X);
+	
+	result = 0;
+	for(int i=1; i<=N; i++) {
+		int time = 0;
+		
+		if(i != X)
+			go(i);
+		
+		time = dist[i][X] + dist[X][i];	
+		result = max(result, time);
+	}
+	
+	printf("%d", result);
+}
