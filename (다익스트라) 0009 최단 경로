@@ -41,11 +41,91 @@ N개의 도시가 있고, M개의 도로가 있다. 하나의 도로는 두 도�
 (출력)
 #1 2
 #2 6
-
 -------------------------------------------------------------------------
-(fail ver source)
 
-// 5/16 Fail
+#include <stdio.h>
+#include <vector>
+#include <queue>
+using namespace std;
+
+#define max_node 100009
+#define INF 999999999
+
+int T, N, M;
+vector<pair<int,int> > node[max_node]; //간선 정보
+int dist[max_node]; //최소 비용
+
+void dijkstra(int start)
+{
+	dist[start] = 0;
+    priority_queue< pair < int, int > > pq; //힙 구조
+    pq.push(make_pair(0, start));
+
+    // 가까운 순서대로 처리하므로 큐를 사용
+    while (!pq.empty())
+    {
+        int distance = -pq.top().first; // 짧은 것이 먼저 오도록 음수화(-)
+        int current = pq.top().second;	
+        pq.pop();
+        
+        // 최단 거리가 아닌 경우 스킵
+        if (dist[current] < distance) {
+            continue;
+        }
+        
+        for (int i=0; i<node[current].size(); i++) {
+
+            // 선택된 노드의 인접 노드
+            int next = node[current][i].second;
+
+            // 선택된 노드를 인접 노드로 거쳐서 가는 비용
+            int nextDistance = distance + node[current][i].first;
+
+            // 기존의 최소 비용보다 더 저렴하면 교체
+            if (nextDistance < dist[next]) {
+                dist[next] = nextDistance;
+                pq.push(make_pair(-nextDistance, next));
+            }
+        }
+    }
+}
+
+int main(){
+	T = 0;
+	scanf("%d", &T);
+	for (int i=1; i<=T; i++) {
+		N = 0;
+		M = 0;
+
+		scanf("%d %d", &N, &M);
+		for (int k=1; k<=N; k++) {
+			dist[k] = INF;
+			node[k].clear();
+		}
+		
+		for (int j=1; j<=M; j++) {
+			int a, b, c;
+			a = 0;
+			b = 0;
+			c = 0;
+			
+			scanf("%d %d %d", &a, &b, &c);
+			
+			node[a].push_back(make_pair(c, b));
+			node[b].push_back(make_pair(c, a));
+			
+		}
+
+    	dijkstra(1);
+
+    	if (dist[N] == INF)
+			dist[N] = -1;
+
+		printf("#%d %d\n", i, dist[N]);
+		
+	}
+}
+-------------------------------------------------------------------------
 
 #include <stdio.h>
 #include <vector>
@@ -71,24 +151,26 @@ void search (int start) {
 	pq.push(make_pair(start, 0));
 	
 	while(!pq.empty()) {
-		int from = pq.top().first;
-		int from_time = pq.top().second;
+		int now = pq.top().first;
+		int now_time = pq.top().second;
 		//printf("pq.top = %d, %d\n", from, from_time);
 		pq.pop();
 		
-		if(from == N) break;
-		visited[from] = 1; 
+		if(visited[now] == 1) continue;
 		
-		for(int temp=0; temp<edge[from].size(); temp++) {
-			int to = edge[from][temp].first;
-			int to_time = from_time + edge[from][temp].second;
+		for(int temp=0; temp<edge[now].size(); temp++) {
+			int next = edge[now][temp].first;
+			int next_time = now_time + edge[now][temp].second;
 			
-			if(dist[to] > to_time && visited[to] != 1) {
-				dist[to] = to_time;
-				pq.push(make_pair(to, to_time));
+			if(dist[next] > next_time && visited[next] != 1) {
+				dist[next] = next_time;
+				pq.push(make_pair(next, next_time));
 				//printf("pq.push (%d, %d)\n", to, to_time);
 			}
+			//if(next == N) return;
 		}
+		
+		visited[now] = 1;
 	}
 }
 
@@ -101,14 +183,13 @@ int main() {
 		for(int k=0; k<=N; k++) {
 			dist[k] = INT_MAX;
 			visited[k] = 0;
-		}
-		for(int k=0; k<=M; k++) {
 			edge[k].clear();
 		}
-		
+
 		for(int j=0; j<M; j++) {
 			scanf("%d %d %d", &a, &b, &c);
 			edge[a].push_back(make_pair(b,c));
+			edge[b].push_back(make_pair(a,c));
 		}
 		
 		search(1);
@@ -119,3 +200,5 @@ int main() {
 			printf("#%d %d\n", i, dist[N]);
 	}
 }
+
+
