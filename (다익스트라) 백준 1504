@@ -1,0 +1,90 @@
+#include <iostream>
+#include <queue>
+#include <vector>
+#define MAXVAL 2100000000
+using namespace std;
+
+int N,A,B,C,M,d,e,l;
+int dist[3][100001];
+int visited[100001];
+vector<pair<int,int> > edge[100001];
+
+void search(int idx, int start) {
+	priority_queue<pair<int,int> > pq;
+	dist[idx][start] = 0;
+	pq.push(make_pair(0, start));
+	
+	while(!pq.empty()) {
+		int now = pq.top().second;
+		int now_time = -pq.top().first;
+		pq.pop();
+		
+		if(visited[now] == 1) continue;
+		
+		for(int k=0; k<edge[now].size(); k++) {
+			int next = edge[now][k].second;
+			int next_time = now_time + edge[now][k].first;
+			
+			if(dist[idx][next] > next_time) {
+				dist[idx][next] = next_time;
+				pq.push(make_pair(-next_time, next));
+			}
+		}
+		
+		visited[now] = 1;
+	}
+	
+}
+
+int findMin() {
+	
+	priority_queue<pair<int,int> > pq2;
+	
+	for(int i=1; i<=N; i++) {
+		if(i==A || i==B || i == C)
+			continue;
+		
+		int result = 1000000;
+		result = min(dist[0][i], dist[1][i]);
+		result = min(result, dist[2][i]);	
+		
+		pq2.push(make_pair(result, i));
+	}
+	
+	return pq2.top().second;
+}
+
+int main() {
+	scanf("%d", &N);
+	
+	for(int i=0; i<=N; i++) {
+		edge[i].clear();
+		visited[i] = 0;
+	}
+	
+	for(int i=0; i<3; i++) {
+		for(int j=0; j<=N; j++) {
+			dist[i][j] = MAXVAL;
+		}
+	}
+	
+	scanf("%d %d %d", &A, &B, &C);
+	scanf("%d", &M);
+	for(int i=0; i<M; i++) {
+		scanf("%d %d %d", &d, &e, &l);
+		edge[d].push_back(make_pair(l,e));
+		edge[e].push_back(make_pair(l,d));
+	}
+	
+	search(0, A);
+	
+	for(int i=0; i<=N; i++) visited[i] = 0;
+	search(1, B);
+	
+	for(int i=0; i<=N; i++) visited[i] = 0;
+	search(2, C);
+	
+	int ans = findMin();
+	printf("%d", ans);
+	
+}
